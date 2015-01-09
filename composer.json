@@ -1,0 +1,10 @@
+{
+	"require": {
+		"slim/slim": "2.*",
+		"slim/views": "0.1.*",
+		"twig/twig": "1.*",		
+		"gregwar/cache": "1.0.*",
+		"php": ">=5.4.0",
+		"opentok/opentok": "2.2.*"
+    }
+}

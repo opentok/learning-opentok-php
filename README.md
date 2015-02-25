@@ -11,6 +11,9 @@ button:
 
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
+Heroku will prompt you to add your OpenTok API key and OpenTok API secret, which you can
+obtain at the [TokBox Dashboard](https://dashboard.tokbox.com/keys).
+
 You can also install this repository on your own PHP server (see the next section).
 
 ## Installation
@@ -26,8 +29,9 @@ You can also install this repository on your own PHP server (see the next sectio
      export API_KEY=0000000
      export API_SECRET=abcdef1234567890abcdef01234567890abcdef
 
-4. The run-demo file starts the PHP CLI development server (requires PHP >= 5.4) on port 8080. If you want to
-run your server on another port, edit the file.Finally, start the server using the run-demo script:
+4. The run-demo file starts the PHP CLI development server (requires PHP >= 5.4) on port 8080. If
+you want to run your server on another port, edit the file. Finally, start the server using the
+run-demo script:
 
      `$ ./run-demo`
 

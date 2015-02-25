@@ -3,6 +3,16 @@
 A simple server that uses the OpenTok PHP SDK to create sessions, generate tokens for those
 sessions, archive (or record) sessions and download those archives.
 
+## Automatic deployment to Heroku
+
+Heroku is a PaaS (Platform as a Service) that can be used to deploy simple and small applications
+for free. To easily deploy this repository to Heroku, sign up for a Heroku account and click this
+button:
+
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+
+You can also install this repository on your own PHP server (see the next section).
+
 ## Installation
 
 1. Clone this repository.
@@ -185,3 +195,29 @@ We then check if the archive is available for viewing. If it is available, the c
             $app->redirect( $archive->url );
 
 If the archive is not yet available, we load a template file `templates/view.html` to which we pass the archive parameters (ID, status, and URL) . This template file checks if the archive is available. If not, it again makes a call to the /view handler.             
+
+## Appendix -- Deploying to Heroku
+
+Heroku is a PaaS (Platform as a Service) that can be used to deploy simple and small applications
+for free. For that reason, you may choose to experiment with this code and deploy it using Heroku.
+
+Use the button at the top of the README to deploy to Heroku in one click!
+
+If you'd like to deploy manually, here is some additional information:
+
+*  The provided `Procfile` describes a web process which can launch this application.
+
+*  Provision the [RedisToGo addon](https://addons.heroku.com/redistogo). It is free for
+   up to 5MB of data. Its configuration will be set for you automatically upon provisioning the
+   service.
+
+*  Use Heroku config to set the following keys:
+
+   -  `OPENTOK_KEY` -- Your OpenTok API Key
+   -  `OPENTOK_SECRET` -- Your OpenTok API Secret
+   -  `SLIM_MODE` -- Set this to `production` when the environment variables should be used to
+      configure the application. The Slim application will only start reading its Heroku config when
+      its mode is set to `'production'`
+
+   You should avoid committing configuration and secrets to your code, and instead use Heroku's
+   config functionality.

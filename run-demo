@@ -6,4 +6,9 @@ then
    export API_SECRET=
 fi
 
+if [ -d "storage" ]
+then
+  rm -rf storage/
+fi
+
 php -S 0.0.0.0:8080 -t web web/index.php

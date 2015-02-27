@@ -4,6 +4,6 @@
     "opentok/opentok": "2.2.*",
     "icanboogie/storage": "~1.0",
     "php": ">=5.4.0",
-    "ext-apc": "*"
+    "ext-apcu": "*"
   }
 }

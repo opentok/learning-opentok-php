@@ -30,8 +30,7 @@ if (!(getenv('API_KEY') && getenv('API_SECRET'))) {
 
 // Instantiate a Slim app
 $app = new Slim(array(
-    'templates.path' => __DIR__.'/../templates',
-    'view' => new \Slim\Views\Twig()
+    'templates.path' => __DIR__.'/../templates'
 ));
 
 // Intialize storage interface wrapper, store it in a singleton

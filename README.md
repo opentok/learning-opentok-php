@@ -22,20 +22,20 @@ You can also install this repository on your own PHP server (see the next sectio
 
 2. Use [Composer](https://getcomposer.org/) to install the dependencies:
 
-`$ composer install --ignore-platform-reqs`
+    `$ composer install --ignore-platform-reqs`
 
 3. Next, input your own API Key and API Secret into the `run-demo` script file:
 
-```
-export API_KEY=0000000
-export API_SECRET=abcdef1234567890abcdef01234567890abcdef
-```
+    ```
+    export API_KEY=0000000
+    export API_SECRET=abcdef1234567890abcdef01234567890abcdef
+    ```
 
 4. The run-demo file starts the PHP CLI development server (requires PHP >= 5.4) on port 8080. If
 you want to run your server on another port, edit the file. Finally, start the server using the
 run-demo script:
 
-`$ ./run-demo`
+    `$ ./run-demo`
 
 5. Visit the URL <http://localhost:8080/session> in your browser. You should see a JSON response
 containing the OpenTok API key, session ID, and token. Read through the sections below to understand

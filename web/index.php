@@ -111,11 +111,7 @@ $app->get('/view/:archiveId', 'cors', function ($archiveId) use ($app) {
     if ($archive->status=='available')
         $app->redirect($archive->url);
     else {
-        $app->render('view.html', array(
-            'id' => $archive->id,
-            'status' => $archive->status,
-            'url' => $archive->url
-        ));
+        $app->render('view.php'));
     }
 });
 

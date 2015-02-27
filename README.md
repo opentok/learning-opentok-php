@@ -93,12 +93,12 @@ The sample app uses a single session ID to demonstrate the video chat, archiving
 functionality. It does not generate a new session ID for each call made to the server. Rather,
 it generates one session ID and stores it. In other applications, it would be common
 to save the session ID in a database table. If a session ID was not previously stored, like
-on the first run of the application, we use the stored OpenTok instance to create a Session. The call
-to the `opentok->createSession()` method returns a Session object. The app calls
-`$session->getSessionId()` to return the session ID, it will be stored in the cache for later use.
+on the first run of the application, we use the stored OpenTok instance to create a Session. The 
+`opentok->createSession()` method returns a Session object. Then after
+`$session->getSessionId()` returns the session ID, it will be stored for later use.
 
 ```php
-// If a sessionId has already been created, retrieve it from the cache
+// If a sessionId has already been created, retrieve it from the storage
 $app->container->singleton('sessionId', function() use ($app) {
     if ($app->storage->exists('sessionId')) {
         return $app->storage->retrieve('sessionId');

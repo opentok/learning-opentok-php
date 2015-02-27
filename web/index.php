@@ -9,8 +9,9 @@ if(!file_exists($autoloader)) {
 require $autoloader;
 
 use Slim\Slim;
-use Gregwar\Cache\Cache;
 
+use ICanBoogie\Storage\APCStorage;
+use ICanBoogie\Storage\FileStorage;
 
 use OpenTok\OpenTok;
 use OpenTok\Role;
@@ -27,15 +28,25 @@ if (!(getenv('API_KEY') && getenv('API_SECRET'))) {
     die('You must define an API_KEY and API_SECRET in the run-demo file');
 }
 
-// Instantiate a slim app
+// Instantiate a Slim app
 $app = new Slim(array(
-        'templates.path' => __DIR__.'/../templates',
-        'view' => new \Slim\Views\Twig()
+    'log.enabled' => true,
+    'templates.path' => '../templates'
 ));
 
-// Intialize a cache, store it in the app container
-$app->container->singleton('cache', function() {
-        return new Cache;
+// Intialize storage interface wrapper, store it in a singleton
+$app->container->singleton('storage', function() use ($app) {
+    // If the SLIM_MODE environment variable is set to 'production' (like on Heroku) the APC is used as 
+    // the storage backed. Otherwise (like running locally) the filesystem is used as the storage 
+    // backend.
+    $storage = null;
+    $mode = $app->config('mode');
+    if ($mode === 'production') {
+        $storage = new APCStorage();
+    } else {
+        $storage = new FileStorage('storage');
+    }
+    return $storage;
 });
 
 // Initialize OpenTok instance, store it in the app contianer
@@ -47,61 +58,65 @@ $app->container->singleton('opentok', function () {
 $app->apiKey = getenv('API_KEY');
 
 // If a sessionId has already been created, retrieve it from the cache
-$sessionId = $app->cache->getOrCreate('sessionId', array(), function () use ($app) {
-        // If the sessionId hasn't been created, create it now and store it
-        $session = $app->opentok->createSession(array(
-                'mediaMode' => MediaMode::ROUTED
-        ));
-        return $session->getSessionId();
+$app->container->singleton('sessionId', function() use ($app) {
+    if ($app->storage->exists('sessionId')) {
+        return $app->storage->retrieve('sessionId');
+    }
+
+    $session = $app->opentok->createSession(array(
+        'mediaMode' => MediaMode::ROUTED
+    ));
+    $app->storage->store('sessionId', $session->getSessionId());
+    return $session->getSessionId();
 });
 
 // Route to return the SessionID and token as a json
-$app->get('/session', 'cors', function () use ($app, $sessionId) {
+$app->get('/session', 'cors', function () use ($app) {
 
-        $token = $app->opentok->generateToken($sessionId);
+    $token = $app->opentok->generateToken($app->sessionId);
 
-        $responseData = array(
-            'apiKey' => $app->apiKey,
-            'sessionId' => $sessionId,
-            'token'=>$token
-        );
+    $responseData = array(
+        'apiKey' => $app->apiKey,
+        'sessionId' => $app->sessionId,
+        'token'=>$token
+    );
 
-        $app->response->headers->set('Content-Type', 'application/json');
-        echo json_encode($responseData);
+    $app->response->headers->set('Content-Type', 'application/json');
+    echo json_encode($responseData);
 });
 
 // Start Archiving and return the Archive ID
 $app->post('/start/:sessionId', 'cors', function ($sessionId) use ($app) {
-        $archive = $app->opentok->startArchive($sessionId, "Getting Started Sample Archive");
-        $app->response->headers->set('Content-Type', 'application/json');
+    $archive = $app->opentok->startArchive($sessionId, 'Getting Started Sample Archive');
+    $app->response->headers->set('Content-Type', 'application/json');
 
-        $responseData = array('archive' => $archive);
-        echo json_encode($responseData);
+    $responseData = array('archive' => $archive);
+    echo json_encode($responseData);
 });
 
 // Stop Archiving and return the Archive ID
 $app->post('/stop/:archiveId', 'cors', function ($archiveId) use ($app) {
-        $archive = $app->opentok->stopArchive($archiveId);
-        $app->response->headers->set('Content-Type', 'application/json');
+    $archive = $app->opentok->stopArchive($archiveId);
+    $app->response->headers->set('Content-Type', 'application/json');
 
-        $responseData = array('archive' => $archive);
-        echo json_encode($responseData);
+    $responseData = array('archive' => $archive);
+    echo json_encode($responseData);
 });
 
 
 // Download the archive
 $app->get('/view/:archiveId', 'cors', function ($archiveId) use ($app) {
-        $archive = $app->opentok->getArchive($archiveId);
+    $archive = $app->opentok->getArchive($archiveId);
 
-        if ($archive->status=='available')
-            $app->redirect($archive->url);
-        else {
-            $app->render('view.html', array(
-                    'id' => $archive->id,
-                    'status' => $archive->status,
-                    'url' => $archive->url
-            ));
-        }
+    if ($archive->status=='available')
+        $app->redirect($archive->url);
+    else {
+        $app->render('view.html', array(
+            'id' => $archive->id,
+            'status' => $archive->status,
+            'url' => $archive->url
+        ));
+    }
 });
 
 
@@ -130,5 +145,12 @@ function cors() {
 $app->map('/:x+', function($x) {
         http_response_code( 200 );
 })->via('OPTIONS');
+
+// TODO: route to clear storage
+$app->post('/session/clear', function() use ($app) {
+    if ($app->storage instanceof APCStorage) {
+        $app->storage->clear();
+    }
+});
 
 $app->run();

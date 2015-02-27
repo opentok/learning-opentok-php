@@ -57,7 +57,7 @@ $app->container->singleton('opentok', function () {
 // Store the API Key in the app container
 $app->apiKey = getenv('API_KEY');
 
-// If a sessionId has already been created, retrieve it from the cache
+// If a sessionId has already been created, retrieve it from the storage
 $app->container->singleton('sessionId', function() use ($app) {
     if ($app->storage->exists('sessionId')) {
         return $app->storage->retrieve('sessionId');

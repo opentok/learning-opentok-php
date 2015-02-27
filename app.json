@@ -19,6 +19,8 @@
       "description": "OpenTok API secret: Login to the TokBox Dashboard (https://dashboard.tokbox.com/keys) to get this value",
       "required": true
     },
-    "SLIM_MODE": "production"
+    "SLIM_MODE": {
+      "description": "Leave this value set to \"production\" when deploying to Heroku",
+      "value": "production"
   }
 }

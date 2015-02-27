@@ -227,10 +227,6 @@ If you'd like to deploy manually, here is some additional information:
 
 *  The provided `Procfile` describes a web process which can launch this application.
 
-*  Provision the [RedisToGo addon](https://addons.heroku.com/redistogo). It is free for
-   up to 5MB of data. Its configuration will be set for you automatically upon provisioning the
-   service.
-
 *  Use Heroku config to set the following keys:
 
    -  `OPENTOK_KEY` -- Your OpenTok API Key

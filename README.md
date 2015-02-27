@@ -9,7 +9,9 @@ Heroku is a PaaS (Platform as a Service) that can be used to deploy simple and s
 for free. To easily deploy this repository to Heroku, sign up for a Heroku account and click this
 button:
 
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+<a href="https://heroku.com/deploy?template=https://github.com/opentok/learning-opentok-php" target="_blank">
+  <img src="https://www.herokucdn.com/deploy/button.png" alt="Deploy">
+</a>
 
 Heroku will prompt you to add your OpenTok API key and OpenTok API secret, which you can
 obtain at the [TokBox Dashboard](https://dashboard.tokbox.com/keys).

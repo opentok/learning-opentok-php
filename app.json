@@ -22,5 +22,6 @@
     "SLIM_MODE": {
       "description": "Leave this value set to \"production\" when deploying to Heroku",
       "value": "production"
+    }
   }
 }

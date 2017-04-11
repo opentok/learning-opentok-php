@@ -30,7 +30,7 @@ if (!(getenv('API_KEY') && getenv('API_SECRET'))) {
 // Instantiate a Slim app
 $app = new Slim(array(
     'log.enabled' => true,
-    'templates.path' => '../templates'
+    'templates.path' => __DIR__.'/../templates'
 ));
 
 // Intialize storage interface wrapper, store it in a singleton

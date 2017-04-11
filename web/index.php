@@ -33,6 +33,11 @@ $app = new Slim(array(
     'templates.path' => __DIR__.'/../templates'
 ));
 
+// Return an info page for the root path
+$app->get('/', cors, function () use ($app) {
+  $app->render('home.php');
+});
+
 // Intialize storage interface wrapper, store it in a singleton
 $app->container->singleton('storage', function() use ($app) {
     // If the SLIM_MODE environment variable is set to 'production' (like on Heroku) the APC is used as 

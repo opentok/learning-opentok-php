@@ -1,7 +1,17 @@
 # OpenTok Getting Started Sample App
 
-A simple server that uses the OpenTok PHP SDK to create sessions, generate tokens for those
-sessions, archive (or record) sessions and download those archives.
+A simple server that uses the [OpenTok](https://tokbox.com/developer/)
+[PHP SDK](https://github.com/opentok/Opentok-PHP-SDK) to create sessions,
+generate tokens for those sessions, archive (or record) sessions, and download
+those archives.
+
+**Important:** This sample PHP repo does not provide client-side OpenTok functionality
+(for connecting to OpenTok sessions and for publishing and subscribing to streams).
+It is intended to be used with the OpenTok tutorials for web, iOS, or Android:
+
+* [Web](https://github.com/opentok/learning-opentok-web)
+* [iOS](https://github.com/opentok/learning-opentok-ios)
+* [Android](https://github.com/opentok/learning-opentok-android)
 
 ## Automatic deployment to Heroku
 

@@ -61,36 +61,77 @@ $app->container->singleton('opentok', function () {
 // Store the API Key in the app container
 $app->apiKey = getenv('API_KEY');
 
-// If a sessionId has already been created, retrieve it from the storage
-$app->container->singleton('sessionId', function() use ($app) {
-    if ($app->storage->exists('sessionId')) {
-        return $app->storage->retrieve('sessionId');
-    }
+// If a sessionId has already been created, retrieve it from the storage 
+$app->container->singleton('sessionId', function() use ($app) { 
+    if ($app->storage->exists('sessionId')) { 
+        return $app->storage->retrieve('sessionId'); 
+    } 
+ 
+    $session = $app->opentok->createSession(array( 
+        'mediaMode' => MediaMode::ROUTED 
+    )); 
+    $app->storage->store('sessionId', $session->getSessionId()); 
+    return $session->getSessionId(); 
+}); 
 
-    $session = $app->opentok->createSession(array(
-        'mediaMode' => MediaMode::ROUTED
-    ));
-    $app->storage->store('sessionId', $session->getSessionId());
-    return $session->getSessionId();
+
+$app->get('/session', 'cors', function () use ($app) { 
+ 
+    $token = $app->opentok->generateToken($app->sessionId); 
+ 
+    $responseData = array( 
+        'apiKey' => $app->apiKey, 
+        'sessionId' => $app->sessionId, 
+        'token'=>$token 
+    ); 
+ 
+    $app->response->headers->set('Content-Type', 'application/json'); 
+    echo json_encode($responseData); 
 });
 
 // Route to return the SessionID and token as a json
-$app->get('/session', 'cors', function () use ($app) {
+// GET /room/:name
+$app->get('/room/:name', 'cors', function($name) use ($app) {
+    if ($app->storage->exists($name)) {
 
-    $token = $app->opentok->generateToken($app->sessionId);
+        // fetch an exiting sessionId
+        $app->sessionId = $app->storage[$name];
 
-    $responseData = array(
-        'apiKey' => $app->apiKey,
-        'sessionId' => $app->sessionId,
-        'token'=>$token
-    );
+        // generate token
+        $token = $app->opentok->generateToken($app->sessionId);
+        $responseData = array(
+            'apiKey' => $app->apiKey,
+            'sessionId' => $app->sessionId,
+            'token'=>$token
+        );
 
-    $app->response->headers->set('Content-Type', 'application/json');
-    echo json_encode($responseData);
+        $app->response->headers->set('Content-Type', 'application/json');
+        echo json_encode($responseData);
+    }
+    else {
+        $session = $app->opentok->createSession(array(
+            'mediaMode' => MediaMode::ROUTED
+        ));
+
+        // store into local
+        $app->storage[$name] = $session->getSessionId();
+        
+        // generate token
+        $token = $app->opentok->generateToken($session->getSessionId());
+        $responseData = array(
+            'apiKey' => $app->apiKey,
+            'sessionId' => $session->getSessionId(),
+            'token'=>$token
+        );
+
+        $app->response->headers->set('Content-Type', 'application/json');
+        echo json_encode($responseData);
+    }
 });
 
 // Start Archiving and return the Archive ID
-$app->post('/start/:sessionId', 'cors', function ($sessionId) use ($app) {
+// POST /session/:sessionId/archive/start
+$app->post('/session/:sessionId/archive/start', 'cors', function ($sessionId) use ($app) {
     $archive = $app->opentok->startArchive($sessionId, 'Getting Started Sample Archive');
     $app->response->headers->set('Content-Type', 'application/json');
 
@@ -99,7 +140,8 @@ $app->post('/start/:sessionId', 'cors', function ($sessionId) use ($app) {
 });
 
 // Stop Archiving and return the Archive ID
-$app->post('/stop/:archiveId', 'cors', function ($archiveId) use ($app) {
+// POST /session/:sessionId/archive/:archiveId/stop
+$app->post('/session/:sessionId/archive/:archiveId/stop', 'cors', function ($sessionId, $archiveId) use ($app) {
     $archive = $app->opentok->stopArchive($archiveId);
     $app->response->headers->set('Content-Type', 'application/json');
 
@@ -107,18 +149,26 @@ $app->post('/stop/:archiveId', 'cors', function ($archiveId) use ($app) {
     echo json_encode($responseData);
 });
 
-
 // Download the archive
-$app->get('/view/:archiveId', 'cors', function ($archiveId) use ($app) {
+// GET /session/:sessionId/archive/:archiveId/view
+$app->get('/session/:sessionId/archive/:archiveId/view', 'cors', function ($sessionId, $archiveId) use ($app) {
     $archive = $app->opentok->getArchive($archiveId);
 
-    if ($archive->status=='available')
-        $app->redirect($archive->url);
+    if ($archive->status=='available') {
+        // $app->redirect($archive->url);
+
+        if ($archive->sessionId != $sessionId) {
+            // TODO: error handling?
+            return;
+        }
+
+        $responseData = array('archive' => $archive->toJson());
+        echo json_encode($responseData);
+    }
     else {
         $app->render('view.php');
     }
 });
-
 
 // Enable CORS functionality
 function cors() {

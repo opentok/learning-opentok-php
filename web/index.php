@@ -134,9 +134,7 @@ $app->get('/room/:name', 'cors', function($name) use ($app) {
 $app->post('/session/:sessionId/archive/start', 'cors', function ($sessionId) use ($app) {
     $archive = $app->opentok->startArchive($sessionId, 'Getting Started Sample Archive');
     $app->response->headers->set('Content-Type', 'application/json');
-
-    $responseData = array('archive' => $archive);
-    echo json_encode($responseData);
+    echo json_encode($archive->toJson());
 });
 
 // Stop Archiving and return the Archive ID
@@ -144,30 +142,34 @@ $app->post('/session/:sessionId/archive/start', 'cors', function ($sessionId) us
 $app->post('/session/:sessionId/archive/:archiveId/stop', 'cors', function ($sessionId, $archiveId) use ($app) {
     $archive = $app->opentok->stopArchive($archiveId);
     $app->response->headers->set('Content-Type', 'application/json');
-
-    $responseData = array('archive' => $archive);
-    echo json_encode($responseData);
+    echo json_encode($archive->toJson());
 });
 
-// Download the archive
+// View the archive
 // GET /session/:sessionId/archive/:archiveId/view
 $app->get('/session/:sessionId/archive/:archiveId/view', 'cors', function ($sessionId, $archiveId) use ($app) {
     $archive = $app->opentok->getArchive($archiveId);
 
     if ($archive->status=='available') {
-        // $app->redirect($archive->url);
-
-        if ($archive->sessionId != $sessionId) {
-            // TODO: error handling?
-            return;
-        }
-
-        $responseData = array('archive' => $archive->toJson());
-        echo json_encode($responseData);
+        $app->redirect($archive->url);
     }
     else {
         $app->render('view.php');
     }
+});
+
+// Fetch the archive info
+// GET /session/:sessionId/archive/:archiveId/info
+$app->get('/session/:sessionId/archive/:archiveId/info', 'cors', function ($sessionId, $archiveId) use ($app) {
+    $archive = $app->opentok->getArchive($archiveId);
+
+    if ($archive->sessionId != $sessionId) {
+        // TODO: error handling?
+        return;
+    }
+
+    $app->response->headers->set('Content-Type', 'application/json');
+    echo json_encode($archive->toJson());
 });
 
 // Enable CORS functionality

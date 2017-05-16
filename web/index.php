@@ -92,9 +92,11 @@ $app->get('/session', 'cors', function () use ($app) {
 // Route to return the SessionID and token as a json
 // GET /room/:name
 $app->get('/room/:name', 'cors', function($name) use ($app) {
+
+    // if a room name is already associated with a session ID
     if ($app->storage->exists($name)) {
 
-        // fetch an exiting sessionId
+        // fetch the sessionId from local storage
         $app->sessionId = $app->storage[$name];
 
         // generate token
@@ -113,7 +115,7 @@ $app->get('/room/:name', 'cors', function($name) use ($app) {
             'mediaMode' => MediaMode::ROUTED
         ));
 
-        // store into local
+        // store the sessionId into local
         $app->storage[$name] = $session->getSessionId();
         
         // generate token
@@ -129,25 +131,29 @@ $app->get('/room/:name', 'cors', function($name) use ($app) {
     }
 });
 
-// Start Archiving and return the Archive ID
-// POST /session/:sessionId/archive/start
-$app->post('/session/:sessionId/archive/start', 'cors', function ($sessionId) use ($app) {
+// Start Archiving and return the archive
+// POST /archive/start
+$app->post('/archive/start', 'cors', function () use ($app) {
+    $json = json_decode($app->request->getBody());
+    $sessionId = $json->sessionId;
     $archive = $app->opentok->startArchive($sessionId, 'Getting Started Sample Archive');
     $app->response->headers->set('Content-Type', 'application/json');
     echo json_encode($archive->toJson());
 });
 
-// Stop Archiving and return the Archive ID
-// POST /session/:sessionId/archive/:archiveId/stop
-$app->post('/session/:sessionId/archive/:archiveId/stop', 'cors', function ($sessionId, $archiveId) use ($app) {
+// Stop Archiving and return the archive
+// POST /archive/stop
+$app->post('/archive/stop', 'cors', function () use ($app) {
+    $json = json_decode($app->request->getBody());
+    $archiveId = $json->archiveId;
     $archive = $app->opentok->stopArchive($archiveId);
     $app->response->headers->set('Content-Type', 'application/json');
     echo json_encode($archive->toJson());
 });
 
 // View the archive
-// GET /session/:sessionId/archive/:archiveId/view
-$app->get('/session/:sessionId/archive/:archiveId/view', 'cors', function ($sessionId, $archiveId) use ($app) {
+// GET /archive/:archiveId/view
+$app->get('/archive/:archiveId/view', 'cors', function ($archiveId) use ($app) {
     $archive = $app->opentok->getArchive($archiveId);
 
     if ($archive->status=='available') {
@@ -158,16 +164,10 @@ $app->get('/session/:sessionId/archive/:archiveId/view', 'cors', function ($sess
     }
 });
 
-// Fetch the archive info
-// GET /session/:sessionId/archive/:archiveId/info
-$app->get('/session/:sessionId/archive/:archiveId/info', 'cors', function ($sessionId, $archiveId) use ($app) {
+// Fetch an archive info specified by an archive ID
+// GET /archive/:archiveId
+$app->get('/archive/:archiveId', 'cors', function ($archiveId) use ($app) {
     $archive = $app->opentok->getArchive($archiveId);
-
-    if ($archive->sessionId != $sessionId) {
-        // TODO: error handling?
-        return;
-    }
-
     $app->response->headers->set('Content-Type', 'application/json');
     echo json_encode($archive->toJson());
 });

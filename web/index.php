@@ -142,10 +142,8 @@ $app->post('/archive/start', 'cors', function () use ($app) {
 });
 
 // Stop Archiving and return the archive
-// POST /archive/stop
-$app->post('/archive/stop', 'cors', function () use ($app) {
-    $json = json_decode($app->request->getBody());
-    $archiveId = $json->archiveId;
+// POST /archive/:/stop
+$app->post('/archive/:archiveId/stop', 'cors', function ($archiveId) use ($app) {
     $archive = $app->opentok->stopArchive($archiveId);
     $app->response->headers->set('Content-Type', 'application/json');
     echo json_encode($archive->toJson());

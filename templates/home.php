@@ -33,16 +33,24 @@
         <td>Return an OpenTok API key, session ID, and token.</td>
       </tr>
       <tr>
-        <td>POST /start/:sessionId</td>
+        <td>GET /room/:name </td>
+        <td>Return an OpenTok API key, session ID, and token associated with a room name.</td>
+      </tr>
+      <tr>
+        <td>POST /archive/start</td>
         <td>Start an archive for the specified OpenTok session.</td>
       </tr>
       <tr>
-        <td>POST /stop/:archiveId</td>
+        <td>POST /archive/:archiveId/stop</td>
         <td>Stop the specified archive.</td>
       </tr>
       <tr>
-        <td>GET /view/:archiveId</td>
+        <td>GET /archive/:archiveId/View</td>
         <td>View the specified archive.</td>
+      </tr>
+      <tr>
+        <td>GET /archive/:archiveId/</td>
+        <td>Fetch the specified archive.</td>
       </tr>
     </ul>
   </p>

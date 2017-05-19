@@ -134,8 +134,7 @@ $app->get('/room/:name', 'cors', function($name) use ($app) {
 // Start Archiving and return the archive
 // POST /archive/start
 $app->post('/archive/start', 'cors', function () use ($app) {
-    $json = json_decode($app->request->getBody());
-    $sessionId = $json->sessionId;
+    $sessionId = $app->request->post('sessionId');
     $archive = $app->opentok->startArchive($sessionId, 'Getting Started Sample Archive');
     $app->response->headers->set('Content-Type', 'application/json');
     echo json_encode($archive->toJson());

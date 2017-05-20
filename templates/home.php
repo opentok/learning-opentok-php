@@ -29,7 +29,7 @@
       Resources are defined at the following endpoints:
     <table>
       <tr>
-        <td>GET /session/</td>
+        <td>GET /session</td>
         <td>Return an OpenTok API key, session ID, and token.</td>
       </tr>
       <tr>
@@ -45,7 +45,7 @@
         <td>Stop the specified archive.</td>
       </tr>
       <tr>
-        <td>GET /archive/:archiveId/View</td>
+        <td>GET /archive/:archiveId/view</td>
         <td>View the specified archive.</td>
       </tr>
       <tr>

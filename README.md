@@ -5,15 +5,7 @@ A simple server that uses the [OpenTok](https://tokbox.com/developer/)
 generate tokens for those sessions, archive (or record) sessions, and download
 those archives.
 
-**Important:** This sample PHP repo does not provide client-side OpenTok functionality
-(for connecting to OpenTok sessions and for publishing and subscribing to streams).
-It is intended to be used with the OpenTok tutorials for web, iOS, or Android:
-
-* [Web](https://github.com/opentok/learning-opentok-web)
-* [iOS](https://github.com/opentok/learning-opentok-ios)
-* [Android](https://github.com/opentok/learning-opentok-android)
-
-## Automatic deployment to Heroku
+## Quick deploy to Heroku
 
 Heroku is a PaaS (Platform as a Service) that can be used to deploy simple and small applications
 for free. To easily deploy this repository to Heroku, sign up for a Heroku account and click this
@@ -26,15 +18,16 @@ button:
 Heroku will prompt you to add your OpenTok API key and OpenTok API secret, which you can
 obtain at the [TokBox Dashboard](https://dashboard.tokbox.com/keys).
 
-You can also install this repository on your own PHP server (see the next section).
+## Requirements
 
-## Installation
+- [Composer](https://getcomposer.org/)
+- [Slim](https://www.slimframework.com/)
 
-1. Clone this repository.
+## Installation && Running on localhost
 
-2. Use [Composer](https://getcomposer.org/) to install the dependencies:
+1. Once you have cloned the app, `cd` to the root directory.
 
-    `$ composer install --ignore-platform-reqs`
+2. Run `composer install --ignore-platform-reqs` command to fetch and install all dependecies.
 
 3. Next, input your own API Key and API Secret into the `run-demo` script file:
 
@@ -43,23 +36,19 @@ You can also install this repository on your own PHP server (see the next sectio
     export API_SECRET=abcdef1234567890abcdef01234567890abcdef
     ```
 
-4. The run-demo file starts the PHP CLI development server (requires PHP >= 5.4) on port 8080. If
-you want to run your server on another port, edit the file. Finally, start the server using the
+4. The run-demo file starts the PHP CLI development server (requires PHP >= 5.4) on port 8080. Start the server using the
 run-demo script:
 
     `$ ./run-demo`
 
 5. Visit the URL <http://localhost:8080/session> in your browser. You should see a JSON response
-containing the OpenTok API key, session ID, and token. Read through the sections below to understand
-how the server has been implemented.
+containing the OpenTok API key, session ID, and token.
 
-# Walkthrough
+# Exploring the code
 
-This demo application uses the [Slim PHP micro-framework](http://www.slimframework.com/) and a
-light-weight storage library (depending on your environment, the [library](https://github.com/ICanBoogie/Storage)
-will either use your filesystem or PHP's APC cache). These are similar to many other
-popular web frameworks and data persistence technologies. These are not a requirement for using
-OpenTok, but they simplify the code in this sample application.
+The `web/index.php` file contains routing for the web service. The rest of this tutorial discusses code in this file.
+
+In order to navigate clients to a designated meeting spot, we associate the Session ID to a room name which is easier for people to recognize and pass. For simplicity, we use a local associated array to implement the association where the room name is the key and the Session ID is the value. For production applications, you may want to configure a persistence to achieve this functionality.
 
 ## Main Controller (web/index.php)
 
@@ -122,14 +111,7 @@ $app->container->singleton('sessionId', function() use ($app) {
 });
 ```
 
-Now we are ready to configure the HTTP routes for our sample app. We need four routes for our app:
-
-1. Generate a Session and Token
-2. Start an archive
-3. Stop an archive
-4. View an archive
-
-### 1. Generate a Session and Token
+### Generate a Session and Token
 
 The route handler for generating a session and token is shown below. The session ID is retrieved
 from the storage and used to generate a new token.
@@ -155,7 +137,7 @@ Inside the route handler, we generate a token, so the client has permission to c
 session. Finally, we return the OpenTok API key, session ID, and token as a JSON-encoded string
 so that the client can connect to a OpenTok session.
 
-### 2. Start an Archive
+### Start an Archive
 
 The handler for starting an archive is shown below. The session ID for which the archive is to be
 started on is sent as a URL parameter by the client application. Inside the handler, the
@@ -178,7 +160,7 @@ This causes the recording to begin. The response sent back to the client's reque
 JSON-encoded string describing the Archive object.
 
 
-### 3. Stop an Archive
+### Stop an Archive
     
 Next we move on to the handler for stopping an Archive:
 
@@ -197,7 +179,7 @@ This handler is similar to the handler for starting an archive. It takes the ID 
 needs to be stopped as a URL parameter. Inside the handler, it makes a call to the `stopArchive()`
 method of the opentok instance which takes the archive ID as an argument. 
 
-### 4. View an Archive
+### View an Archive
 
 The code for the handler to view an archive is shown below:
 
@@ -226,24 +208,4 @@ If the archive is not yet available, we load a template file `templates/view.htm
 the archive parameters (ID, status, and URL) . This template file checks if the archive is available.
 If not, it again requests the `/view/:archiveId` page.
 
-## Appendix -- Deploying to Heroku
-
-Heroku is a PaaS (Platform as a Service) that can be used to deploy simple and small applications
-for free. For that reason, you may choose to experiment with this code and deploy it using Heroku.
-
-Use the button at the top of the README to deploy to Heroku in one click!
-
-If you'd like to deploy manually, here is some additional information:
-
-*  The provided `Procfile` describes a web process which can launch this application.
-
-*  Use Heroku config to set the following keys:
-
-   -  `OPENTOK_KEY` -- Your OpenTok API Key
-   -  `OPENTOK_SECRET` -- Your OpenTok API Secret
-   -  `SLIM_MODE` -- Set this to `production` when the environment variables should be used to
-      configure the application. The Slim application will only start reading its Heroku config when
-      its mode is set to `'production'`
-
-   You should avoid committing configuration and secrets to your code, and instead use Heroku's
-   config functionality.
+## More information

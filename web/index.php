@@ -37,13 +37,13 @@ $app->container->singleton('opentok', function () {
 // Store the API Key in the app container
 $app->apiKey = getenv('API_KEY');
 
-$app->get('/session', 'cors', function () use ($app) { 
-    $app->redirect('/room/session');
-});
-
 // Return an info page for the root path
 $app->get('/', cors, function () use ($app) {
     $app->render('home.php');
+});
+
+$app->get('/session', 'cors', function () use ($app) { 
+    $app->redirect('/room/session');
 });
 
 // Route to return the SessionID and token as a json
@@ -137,7 +137,7 @@ function cors() {
 
 // return HTTP 200 for HTTP OPTIONS requests
 $app->map('/:x+', function($x) {
-        http_response_code( 200 );
+    http_response_code( 200 );
 })->via('OPTIONS');
 
 $app->run();

@@ -9,10 +9,6 @@ if(!file_exists($autoloader)) {
 require $autoloader;
 
 use Slim\Slim;
-
-use ICanBoogie\Storage\APCStorage;
-use ICanBoogie\Storage\FileStorage;
-
 use OpenTok\OpenTok;
 use OpenTok\MediaMode;
 
@@ -33,71 +29,35 @@ $app = new Slim(array(
     'templates.path' => __DIR__.'/../templates'
 ));
 
-// Return an info page for the root path
-$app->get('/', cors, function () use ($app) {
-  $app->render('home.php');
-});
-
-// Intialize storage interface wrapper, store it in a singleton
-$app->container->singleton('storage', function() use ($app) {
-    // If the SLIM_MODE environment variable is set to 'production' (like on Heroku) the APC is used as 
-    // the storage backed. Otherwise (like running locally) the filesystem is used as the storage 
-    // backend.
-    $storage = null;
-    $mode = $app->config('mode');
-    if ($mode === 'production') {
-        $storage = new APCStorage();
-    } else {
-        $storage = new FileStorage('storage');
-    }
-    return $storage;
-});
-
 // Initialize OpenTok instance, store it in the app contianer
 $app->container->singleton('opentok', function () {
-        return new OpenTok(getenv('API_KEY'), getenv('API_SECRET'));
+    return new OpenTok(getenv('API_KEY'), getenv('API_SECRET'));
 });
 
 // Store the API Key in the app container
 $app->apiKey = getenv('API_KEY');
 
-// If a sessionId has already been created, retrieve it from the storage 
-$app->container->singleton('sessionId', function() use ($app) { 
-    if ($app->storage->exists('sessionId')) { 
-        return $app->storage->retrieve('sessionId'); 
-    } 
- 
-    $session = $app->opentok->createSession(array( 
-        'mediaMode' => MediaMode::ROUTED 
-    )); 
-    $app->storage->store('sessionId', $session->getSessionId()); 
-    return $session->getSessionId(); 
-}); 
-
-
 $app->get('/session', 'cors', function () use ($app) { 
- 
-    $token = $app->opentok->generateToken($app->sessionId); 
- 
-    $responseData = array( 
-        'apiKey' => $app->apiKey, 
-        'sessionId' => $app->sessionId, 
-        'token'=>$token 
-    ); 
- 
-    $app->response->headers->set('Content-Type', 'application/json'); 
-    echo json_encode($responseData); 
+    $app->redirect('/room/session');
+});
+
+// Return an info page for the root path
+$app->get('/', cors, function () use ($app) {
+    $app->render('home.php');
 });
 
 // Route to return the SessionID and token as a json
 // GET /room/:name
 $app->get('/room/:name', 'cors', function($name) use ($app) {
 
+    // Use a session
+    session_start();
+
     // if a room name is already associated with a session ID
-    if ($app->storage->exists($name)) {
+    if (isset($_SESSION[$name])) {
 
         // fetch the sessionId from local storage
-        $app->sessionId = $app->storage[$name];
+        $app->sessionId = $_SESSION[$name];
 
         // generate token
         $token = $app->opentok->generateToken($app->sessionId);
@@ -116,7 +76,7 @@ $app->get('/room/:name', 'cors', function($name) use ($app) {
         ));
 
         // store the sessionId into local
-        $app->storage[$name] = $session->getSessionId();
+        $_SESSION[$name] = $session->getSessionId();
         
         // generate token
         $token = $app->opentok->generateToken($session->getSessionId());
@@ -152,7 +112,6 @@ $app->post('/archive/:archiveId/stop', 'cors', function ($archiveId) use ($app) 
 // GET /archive/:archiveId/view
 $app->get('/archive/:archiveId/view', 'cors', function ($archiveId) use ($app) {
     $archive = $app->opentok->getArchive($archiveId);
-
     if ($archive->status=='available') {
         $app->redirect($archive->url);
     }
@@ -180,12 +139,5 @@ function cors() {
 $app->map('/:x+', function($x) {
         http_response_code( 200 );
 })->via('OPTIONS');
-
-// TODO: route to clear storage
-$app->post('/session/clear', function() use ($app) {
-    if ($app->storage instanceof APCStorage) {
-        $app->storage->clear();
-    }
-});
 
 $app->run();

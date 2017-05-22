@@ -52,26 +52,6 @@ In order to navigate clients to a designated meeting spot, we associate the Sess
 
 ## Main Controller (web/index.php)
 
-The first thing done in this file is to require the autoloader, which pulls in all the dependencies
-that were installed by Composer. We now have the Slim framework, the storage library, and most
-importantly the OpenTok SDK available.
-
-```php
-require $autoloader;
-
-use Slim\Slim;
-
-use ICanBoogie\Storage\APCStorage;
-use ICanBoogie\Storage\FileStorage;
-
-use OpenTok\OpenTok;
-use OpenTok\Role;
-use OpenTok\MediaMode;
-```
-
-Next the controller performs some basic checks on the environment, initializes the Slim application
-(`$app`), and sets up the storage to be available in the application's container (`$app->storage`).
-
 The first thing that we do with OpenTok is to initialize an instance and store it in the application
 container. At the same time, we also store the OpenTok API key separately so that the app can access
 it on its own.
@@ -202,9 +182,9 @@ which takes the archive ID as the parameter.
 
 We then check if the archive is available for viewing. If it is available, the client application is
 redirected to the archive's URL. Note that this is temporary storage and the archive status will
-change to `'expired'` after 72 hours.
+change to `expired` after 72 hours.
 
-If the archive is not yet available, we load a template file `templates/view.html` to which we pass
+If the archive is not yet available, we load a template file `templates/view.php` to which we pass
 the archive parameters (ID, status, and URL) . This template file checks if the archive is available.
 If not, it again requests the `/view/:archiveId` page.
 

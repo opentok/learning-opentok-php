@@ -19,8 +19,8 @@ if (php_sapi_name() === 'cli-server' && is_file($filename)) {
 }
 
 // Verify that the API Key and API Secret are defined
-if (!(getenv('API_KEY') && getenv('API_SECRET'))) {
-    die('You must define an API_KEY and API_SECRET in the run-demo file');
+if (!(getenv('TOKBOX_API_KEY') && getenv('TOKBOX_SECRET'))) {
+    die('You must define an TOKBOX_API_KEY and TOKBOX_SECRET in the run-demo file');
 }
 
 // Instantiate a Slim app
@@ -29,29 +29,35 @@ $app = new Slim(array(
     'templates.path' => __DIR__.'/../templates'
 ));
 
+// IMPORTANT: We use Session(http://php.net/manual/en/reserved.variables.session.php) to share the associated array across each routes
+// It uses to associate room names with unique session IDs. 
+// However, since this is stored in memory, restarting your server will reset these values
+// If you want to have a room-to-session association in your production application you should consider a more persistent storage
+session_start();
+
 // Initialize OpenTok instance, store it in the app contianer
 $app->container->singleton('opentok', function () {
-    return new OpenTok(getenv('API_KEY'), getenv('API_SECRET'));
+    return new OpenTok(getenv('TOKBOX_API_KEY'), getenv('TOKBOX_SECRET'));
 });
 
 // Store the API Key in the app container
-$app->apiKey = getenv('API_KEY');
+$app->apiKey = getenv('TOKBOX_API_KEY');
 
-// Return an info page for the root path
 $app->get('/', cors, function () use ($app) {
     $app->render('home.php');
 });
 
+/**
+ * GET /session redirects to /room/session
+ */
 $app->get('/session', 'cors', function () use ($app) { 
     $app->redirect('/room/session');
 });
 
-// Route to return the SessionID and token as a json
-// GET /room/:name
+/**
+ * GET /room/:name
+ */
 $app->get('/room/:name', 'cors', function($name) use ($app) {
-
-    // Use a session
-    session_start();
 
     // if a room name is already associated with a session ID
     if (isset($_SESSION[$name])) {
@@ -91,8 +97,9 @@ $app->get('/room/:name', 'cors', function($name) use ($app) {
     }
 });
 
-// Start Archiving and return the archive
-// POST /archive/start
+/**
+ * POST /archive/start
+ */
 $app->post('/archive/start', 'cors', function () use ($app) {
     $sessionId = $app->request->post('sessionId');
     $archive = $app->opentok->startArchive($sessionId, 'Getting Started Sample Archive');
@@ -100,16 +107,18 @@ $app->post('/archive/start', 'cors', function () use ($app) {
     echo json_encode($archive->toJson());
 });
 
-// Stop Archiving and return the archive
-// POST /archive/:/stop
+/**
+ * POST /archive/:archiveId/stop
+ */
 $app->post('/archive/:archiveId/stop', 'cors', function ($archiveId) use ($app) {
     $archive = $app->opentok->stopArchive($archiveId);
     $app->response->headers->set('Content-Type', 'application/json');
     echo json_encode($archive->toJson());
 });
 
-// View the archive
-// GET /archive/:archiveId/view
+/**
+ * GET /archive/:archiveId/view
+ */
 $app->get('/archive/:archiveId/view', 'cors', function ($archiveId) use ($app) {
     $archive = $app->opentok->getArchive($archiveId);
     if ($archive->status=='available') {
@@ -120,12 +129,29 @@ $app->get('/archive/:archiveId/view', 'cors', function ($archiveId) use ($app) {
     }
 });
 
-// Fetch an archive info specified by an archive ID
-// GET /archive/:archiveId
+/**
+ * GET /archive/:archiveId
+ */
 $app->get('/archive/:archiveId', 'cors', function ($archiveId) use ($app) {
     $archive = $app->opentok->getArchive($archiveId);
     $app->response->headers->set('Content-Type', 'application/json');
     echo json_encode($archive->toJson());
+});
+
+/**
+ * GET /archive
+ */
+$app->get('/archive', 'cors', function() use ($app) {
+    $offset = $app->request->get('offset') != null ? intval($app->request->get('offset')) : 0;
+    $count = $app->request->get('count') != null ? intval($app->request->get('count')) : 1000;
+    $archiveList = $app->opentok->listArchives($offset, $count);
+    $archives = $archiveList->getItems();
+
+    $result = array();
+    foreach ($archives as $archive) {
+        array_push($result, $archive->toJson());
+    }
+    echo json_encode($result);
 });
 
 // Enable CORS functionality

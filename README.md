@@ -27,23 +27,25 @@ obtain at the [TokBox Dashboard](https://dashboard.tokbox.com/keys).
 
 ## Installation & Running on localhost
 
-1. Once you have cloned the app, `cd` to the root directory.
+  1. Clone the app by running the command
+  
+		  git clone git@github.com:opentok/learning-opentok-php.git
 
-2. Run `composer install --ignore-platform-reqs` command to fetch and install all dependecies.
+  2. `cd` to the root directory.
+  3. Run `composer install --ignore-platform-reqs` command to fetch and install all dependecies.
+  4. Next, input your own API Key and API Secret into the `run-demo` script file:
 
-3. Next, input your own API Key and API Secret into the `run-demo` script file:
+      ```
+      export TOKBOX_API_KEY=0000000
+      export TOKBOX_SECRET=abcdef1234567890abcdef01234567890abcdef
+      ```
 
-    ```
-    export API_KEY=0000000
-    export API_SECRET=abcdef1234567890abcdef01234567890abcdef
-    ```
-
-4. The run-demo file starts the PHP CLI development server (requires PHP >= 5.4) on port 8080. Start the server using the
+  5. The run-demo file starts the PHP CLI development server (requires PHP >= 5.4) on port 8080. Start the server using the
 run-demo script:
 
     `$ ./run-demo`
 
-5. Visit the URL <http://localhost:8080/session> in your browser. You should see a JSON response
+  6. Visit the URL <http://localhost:8080/session> in your browser. You should see a JSON response
 containing the OpenTok API key, session ID, and token.
 
 # Exploring the code
@@ -156,7 +158,7 @@ $app->get('/archive/:archiveId/view', 'cors', function ($archiveId) use ($app) {
 });
 ```
 
-### Fetch an Archive info
+### Get Archive information
 
 A `GET` request to `/archive/:archiveId` returns a JSON object that contains all archive properties, including `status`, `url`, `duration`, etc. For more information, see [here](https://tokbox.com/developer/sdks/node/reference/Archive.html).
 
@@ -166,6 +168,18 @@ $app->get('/archive/:archiveId', 'cors', function ($archiveId) use ($app) {
     $app->response->headers->set('Content-Type', 'application/json');
     echo json_encode($archive->toJson());
 });
+```
+
+### Fetch multiple Archives
+
+A `GET` request to `/archive` with optional `count` and `offset` params returns a list of JSON archive objects. For more information, please check [here](https://tokbox.com/developer/sdks/node/reference/OpenTok.html#listArchives).
+
+Examples:
+```php
+GET /archive // fetch up to 1000 archive objects
+GET /archive?count=10  // fetch the first 10 archive objects
+GET /archive?offset=10  // fetch archives but first 10 archive objetcs
+GET /archive?count=10&offset=10 // fetch 10 archive objects starting from 11st
 ```
 
 ## More information

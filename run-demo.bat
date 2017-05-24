@@ -1,12 +1,12 @@
 :: Why? because windows can't do an OR within the conditional
-IF NOT DEFINED API_KEY GOTO defkeysecret
-IF NOT DEFINED API_SECRET GOTO defkeysecret
+IF NOT DEFINED TOKBOX_API_KEY GOTO defkeysecret
+IF NOT DEFINED TOKBOX_SECRET GOTO defkeysecret
 GOTO skipdef
 
 :defkeysecret
 
-SET API_KEY=
-SET API_SECRET=
+SET TOKBOX_API_KEY=
+SET TOKBOX_SECRET=
 
 :skipdef
 

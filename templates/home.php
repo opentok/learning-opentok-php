@@ -49,8 +49,13 @@
         <td>View the specified archive.</td>
       </tr>
       <tr>
-        <td>GET /archive/:archiveId/</td>
-        <td>Fetch the specified archive.</td>
+        <td>GET /archive/:archiveId</td>
+        <td>Return metadata for the specified archive.</td>
+      </tr>
+      <tr>
+        <td>GET /archive</td>
+        <td>Return a list of archives. <a href="https://tokbox.com/developer/sdks/node/reference/OpenTok.html#listArchives">More Information</td>
+        <td>Pagination is enabled by applying either count or offset parameteres.</td>
       </tr>
     </ul>
   </p>

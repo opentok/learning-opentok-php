@@ -9,6 +9,10 @@ if(!file_exists($autoloader)) {
 require $autoloader;
 
 use Slim\Slim;
+
+use ICanBoogie\Storage\APCStorage;
+use ICanBoogie\Storage\FileStorage;
+
 use OpenTok\OpenTok;
 use OpenTok\MediaMode;
 
@@ -29,11 +33,10 @@ $app = new Slim(array(
     'templates.path' => __DIR__.'/../templates'
 ));
 
-// IMPORTANT: We use Session(http://php.net/manual/en/reserved.variables.session.php) to share the associated array across each routes
-// It uses to associate room names with unique session IDs. 
-// However, since this is stored in memory, restarting your server will reset these values
-// If you want to have a room-to-session association in your production application you should consider a more persistent storage
-session_start();
+// Intialize storage interface wrapper, store it in a singleton
+$app->container->singleton('storage', function() use ($app) {
+    return new FileStorage('storage');
+});
 
 // Initialize OpenTok instance, store it in the app contianer
 $app->container->singleton('opentok', function () {
@@ -60,10 +63,10 @@ $app->get('/session', 'cors', function () use ($app) {
 $app->get('/room/:name', 'cors', function($name) use ($app) {
 
     // if a room name is already associated with a session ID
-    if (isset($_SESSION[$name])) {
+    if ($app->storage->exists($name)) {
 
         // fetch the sessionId from local storage
-        $app->sessionId = $_SESSION[$name];
+        $app->sessionId = $app->storage[$name];
 
         // generate token
         $token = $app->opentok->generateToken($app->sessionId);
@@ -82,7 +85,7 @@ $app->get('/room/:name', 'cors', function($name) use ($app) {
         ));
 
         // store the sessionId into local
-        $_SESSION[$name] = $session->getSessionId();
+        $app->storage[$name] = $session->getSessionId();
         
         // generate token
         $token = $app->opentok->generateToken($session->getSessionId());
@@ -165,5 +168,12 @@ function cors() {
 $app->map('/:x+', function($x) {
     http_response_code( 200 );
 })->via('OPTIONS');
+
+// TODO: route to clear storage
+$app->post('/session/clear', function() use ($app) {
+    if ($app->storage instanceof APCStorage) {
+        $app->storage->clear();
+    }
+});
 
 $app->run();

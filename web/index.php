@@ -9,8 +9,6 @@ if(!file_exists($autoloader)) {
 require $autoloader;
 
 use Slim\Slim;
-
-use ICanBoogie\Storage\APCStorage;
 use ICanBoogie\Storage\FileStorage;
 
 use OpenTok\OpenTok;
@@ -33,7 +31,10 @@ $app = new Slim(array(
     'templates.path' => __DIR__.'/../templates'
 ));
 
-// Intialize storage interface wrapper, store it in a singleton
+// IMPORTANT: storage is a variable that associates room names with unique unique sesssion IDs. 
+// For simplicty, we use a extension called FileStorage to implement this logic.
+// Generally speaking, a production application chooses a database system like MySQL, MongoDB, or Redis etc.
+// The FileStorage transforms into a file where the name is a room name and its value is session ID.
 $app->container->singleton('storage', function() use ($app) {
     return new FileStorage('storage');
 });

@@ -59,14 +59,11 @@ In order to navigate clients to a designated meeting spot, we associate the Sess
 The `GET /room/:name` route associates an OpenTok session with a "room" name. This route handles the passed room name and performs a check to determine whether the app should generate a new session ID or retrieve a session ID from the [PHP Session](http://php.net/manual/en/reserved.variables.session.php). Then, it generates an OpenTok token for that session ID. Once the API key, session ID, and token are ready, it sends a response with the body set to a JSON object containing the information.
 
 ```php
-// Use a session
-session_start();
-
 // if a room name is already associated with a session ID
-if (isset($_SESSION[$name])) {
+if ($app->storage->exists($name)) {
 
     // fetch the sessionId from local storage
-    $app->sessionId = $_SESSION[$name];
+    $app->sessionId = $app->storage[$name];
 
     // generate token
     $token = $app->opentok->generateToken($app->sessionId);
@@ -85,7 +82,7 @@ else {
     ));
 
     // store the sessionId into local
-    $_SESSION[$name] = $session->getSessionId();
+    $app->storage[$name] = $session->getSessionId();
     
     // generate token
     $token = $app->opentok->generateToken($session->getSessionId());

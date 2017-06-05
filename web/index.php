@@ -47,7 +47,7 @@ $app->container->singleton('opentok', function () {
 // Store the API Key in the app container
 $app->apiKey = getenv('TOKBOX_API_KEY');
 
-$app->get('/', cors, function () use ($app) {
+$app->get('/', 'cors', function () use ($app) {
     $app->render('home.php');
 });
 

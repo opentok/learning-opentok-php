@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "661126eb304f449da13ff85700d78ade",
+    "content-hash": "b1e2241ffaaf4be73b98ba9a1f6d91ea",
     "packages": [
         {
             "name": "aoberoi/json-works",
@@ -49,7 +49,7 @@
                 "json",
                 "schema"
             ],
-            "time": "2015-04-29 05:52:18"
+            "time": "2015-04-29T05:52:18+00:00"
         },
         {
             "name": "guzzle/guzzle",
@@ -145,7 +145,7 @@
                 "web service"
             ],
             "abandoned": "guzzlehttp/guzzle",
-            "time": "2015-03-18 18:23:50"
+            "time": "2015-03-18T18:23:50+00:00"
         },
         {
             "name": "icanboogie/storage",
@@ -189,7 +189,7 @@
                 "retrieve",
                 "store"
             ],
-            "time": "2015-08-24 18:26:30"
+            "time": "2015-08-24T18:26:30+00:00"
         },
         {
             "name": "opentok/opentok",
@@ -245,7 +245,7 @@
                 "streaming",
                 "video"
             ],
-            "time": "2015-04-30 15:01:40"
+            "time": "2015-04-30T15:01:40+00:00"
         },
         {
             "name": "slim/slim",
@@ -292,20 +292,20 @@
                 "rest",
                 "router"
             ],
-            "time": "2017-01-07 12:21:41"
+            "time": "2017-01-07T12:21:41+00:00"
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.8.19",
+            "version": "v2.8.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
-                "reference": "88b65f0ac25355090e524aba4ceb066025df8bd2"
+                "reference": "7fc8e2b4118ff316550596357325dfd92a51f531"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/88b65f0ac25355090e524aba4ceb066025df8bd2",
-                "reference": "88b65f0ac25355090e524aba4ceb066025df8bd2",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/7fc8e2b4118ff316550596357325dfd92a51f531",
+                "reference": "7fc8e2b4118ff316550596357325dfd92a51f531",
                 "shasum": ""
             },
             "require": {
@@ -352,7 +352,7 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2017-04-03 20:37:06"
+            "time": "2017-04-26T16:56:54+00:00"
         }
     ],
     "packages-dev": [],
@@ -360,6 +360,7 @@
     "minimum-stability": "stable",
     "stability-flags": [],
     "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": {
         "php": ">=5.4.0",
         "ext-apcu": "*"

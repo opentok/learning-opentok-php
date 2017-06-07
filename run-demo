@@ -1,9 +1,9 @@
 #!/bin/sh
 
-if [ -z "$API_KEY" ] || [ -z "$API_SECRET" ]
+if [ -z "$TOKBOX_API_KEY" ] || [ -z "$TOKBOX_SECRET" ]
 then
-   export API_KEY=
-   export API_SECRET=
+   export TOKBOX_API_KEY=
+   export TOKBOX_SECRET=
 fi
 
 if [ -d "storage" ]

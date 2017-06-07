@@ -1,3 +1,5 @@
+![logo](./tokbox-logo.png)
+
 # OpenTok Getting Started Sample App
 
 A simple server that uses the [OpenTok](https://tokbox.com/developer/)
@@ -5,15 +7,7 @@ A simple server that uses the [OpenTok](https://tokbox.com/developer/)
 generate tokens for those sessions, archive (or record) sessions, and download
 those archives.
 
-**Important:** This sample PHP repo does not provide client-side OpenTok functionality
-(for connecting to OpenTok sessions and for publishing and subscribing to streams).
-It is intended to be used with the OpenTok tutorials for web, iOS, or Android:
-
-* [Web](https://github.com/opentok/learning-opentok-web)
-* [iOS](https://github.com/opentok/learning-opentok-ios)
-* [Android](https://github.com/opentok/learning-opentok-android)
-
-## Automatic deployment to Heroku
+## Quick deploy to Heroku
 
 Heroku is a PaaS (Platform as a Service) that can be used to deploy simple and small applications
 for free. To easily deploy this repository to Heroku, sign up for a Heroku account and click this
@@ -26,120 +20,53 @@ button:
 Heroku will prompt you to add your OpenTok API key and OpenTok API secret, which you can
 obtain at the [TokBox Dashboard](https://dashboard.tokbox.com/keys).
 
-You can also install this repository on your own PHP server (see the next section).
+## Requirements
 
-## Installation
+- [Composer](https://getcomposer.org/)
+- [Slim](https://www.slimframework.com/)
 
-1. Clone this repository.
+## Installation & Running on localhost
 
-2. Use [Composer](https://getcomposer.org/) to install the dependencies:
+  1. Clone the app by running the command
+  
+		  git clone git@github.com:opentok/learning-opentok-php.git
 
-    `$ composer install --ignore-platform-reqs`
+  2. `cd` to the root directory.
+  3. Run `composer install --ignore-platform-reqs` command to fetch and install all dependecies.
+  4. Next, input your own API Key and API Secret into the `run-demo` script file:
 
-3. Next, input your own API Key and API Secret into the `run-demo` script file:
+      ```
+      export TOKBOX_API_KEY=0000000
+      export TOKBOX_SECRET=abcdef1234567890abcdef01234567890abcdef
+      ```
 
-    ```
-    export API_KEY=0000000
-    export API_SECRET=abcdef1234567890abcdef01234567890abcdef
-    ```
-
-4. The run-demo file starts the PHP CLI development server (requires PHP >= 5.4) on port 8080. If
-you want to run your server on another port, edit the file. Finally, start the server using the
+  5. The run-demo file starts the PHP CLI development server (requires PHP >= 5.4) on port 8080. Start the server using the
 run-demo script:
 
     `$ ./run-demo`
 
-5. Visit the URL <http://localhost:8080/session> in your browser. You should see a JSON response
-containing the OpenTok API key, session ID, and token. Read through the sections below to understand
-how the server has been implemented.
+  6. Visit the URL <http://localhost:8080/session> in your browser. You should see a JSON response
+containing the OpenTok API key, session ID, and token.
 
-# Walkthrough
+# Exploring the code
 
-This demo application uses the [Slim PHP micro-framework](http://www.slimframework.com/) and a
-light-weight storage library (depending on your environment, the [library](https://github.com/ICanBoogie/Storage)
-will either use your filesystem or PHP's APC cache). These are similar to many other
-popular web frameworks and data persistence technologies. These are not a requirement for using
-OpenTok, but they simplify the code in this sample application.
+The `web/index.php` file contains routing for the web service. The rest of this tutorial discusses code in this file.
 
-## Main Controller (web/index.php)
+In order to navigate clients to a designated meeting spot, we associate the Session ID to a room name which is easier for people to recognize and pass. For simplicity, we use a local associated array to implement the association where the room name is the key and the Session ID is the value. For production applications, you may want to configure a persistence (such as a database) to achieve this functionality.
 
-The first thing done in this file is to require the autoloader, which pulls in all the dependencies
-that were installed by Composer. We now have the Slim framework, the storage library, and most
-importantly the OpenTok SDK available.
+### Generate a Session and Token
+
+The `GET /room/:name` route associates an OpenTok session with a "room" name. This route handles the passed room name and performs a check to determine whether the app should generate a new session ID or retrieve a session ID from the [PHP Session](http://php.net/manual/en/reserved.variables.session.php). Then, it generates an OpenTok token for that session ID. Once the API key, session ID, and token are ready, it sends a response with the body set to a JSON object containing the information.
 
 ```php
-require $autoloader;
+// if a room name is already associated with a session ID
+if ($app->storage->exists($name)) {
 
-use Slim\Slim;
+    // fetch the sessionId from local storage
+    $app->sessionId = $app->storage[$name];
 
-use ICanBoogie\Storage\APCStorage;
-use ICanBoogie\Storage\FileStorage;
-
-use OpenTok\OpenTok;
-use OpenTok\Role;
-use OpenTok\MediaMode;
-```
-
-Next the controller performs some basic checks on the environment, initializes the Slim application
-(`$app`), and sets up the storage to be available in the application's container (`$app->storage`).
-
-The first thing that we do with OpenTok is to initialize an instance and store it in the application
-container. At the same time, we also store the OpenTok API key separately so that the app can access
-it on its own.
-
-Notice that the app gets the `API_KEY` and `API_SECRET` from the environment variables.
-
-
-```php
-// Initialize OpenTok instance, store it in the app contianer
-$app->container->singleton('opentok', function () {
-    return new OpenTok( getenv('API_KEY'), getenv('API_SECRET'));
-});
-
-$app->apiKey = getenv('API_KEY');
-```
-
-The sample app uses a single session ID to demonstrate the video chat, archiving, and signaling
-functionality. It does not generate a new session ID for each call made to the server. Rather,
-it generates one session ID and stores it. In other applications, it would be common
-to save the session ID in a database table. If a session ID was not previously stored, like
-on the first run of the application, we use the stored OpenTok instance to create a Session. The 
-`opentok->createSession()` method returns a Session object. Then after
-`$session->getSessionId()` returns the session ID, it will be stored for later use.
-
-```php
-// If a sessionId has already been created, retrieve it from the storage
-$app->container->singleton('sessionId', function() use ($app) {
-    if ($app->storage->exists('sessionId')) {
-        return $app->storage->retrieve('sessionId');
-    }
-
-    $session = $app->opentok->createSession(array(
-        'mediaMode' => MediaMode::ROUTED
-    ));
-    $app->storage->store('sessionId', $session->getSessionId());
-    return $session->getSessionId();
-});
-```
-
-Now we are ready to configure the HTTP routes for our sample app. We need four routes for our app:
-
-1. Generate a Session and Token
-2. Start an archive
-3. Stop an archive
-4. View an archive
-
-### 1. Generate a Session and Token
-
-The route handler for generating a session and token is shown below. The session ID is retrieved
-from the storage and used to generate a new token.
-
-```php
-// Route to return the SessionID and token as a json
-$app->get('/session', 'cors', function () use ($app) {
-
+    // generate token
     $token = $app->opentok->generateToken($app->sessionId);
-
     $responseData = array(
         'apiKey' => $app->apiKey,
         'sessionId' => $app->sessionId,
@@ -148,102 +75,117 @@ $app->get('/session', 'cors', function () use ($app) {
 
     $app->response->headers->set('Content-Type', 'application/json');
     echo json_encode($responseData);
+}
+else {
+    $session = $app->opentok->createSession(array(
+        'mediaMode' => MediaMode::ROUTED
+    ));
+
+    // store the sessionId into local
+    $app->storage[$name] = $session->getSessionId();
+    
+    // generate token
+    $token = $app->opentok->generateToken($session->getSessionId());
+    $responseData = array(
+        'apiKey' => $app->apiKey,
+        'sessionId' => $session->getSessionId(),
+        'token'=>$token
+    );
+
+    $app->response->headers->set('Content-Type', 'application/json');
+    echo json_encode($responseData);
+}
+```
+
+The `GET /session` routes generates a convenient session for fast establishment of communication.
+
+```php
+$app->get('/session', 'cors', function () use ($app) { 
+    $app->redirect('/room/session');
 });
 ```
 
-Inside the route handler, we generate a token, so the client has permission to connect to that
-session. Finally, we return the OpenTok API key, session ID, and token as a JSON-encoded string
-so that the client can connect to a OpenTok session.
+### Start an [Archive](https://tokbox.com/developer/guides/archiving/)
 
-### 2. Start an Archive
-
-The handler for starting an archive is shown below. The session ID for which the archive is to be
-started on is sent as a URL parameter by the client application. Inside the handler, the
-`startArchive()` method of the opentok instance is called with the session ID belonging to the
-session that needs to be archived. The optional second argument is the archive name, which is
-stored with the archive and can be read later. 
+A `POST` request to the `/archive/start` route starts an archive recording of an OpenTok session.
+The session ID OpenTok session is passed in as JSON data in the body of the request
 
 ```php
-// Start Archiving and return the Archive ID
-$app->post('/start/:sessionId', 'cors', function ($sessionId) use ($app) {
+// Start Archiving and return the Archive
+$app->post('/archive/start', 'cors', function () use ($app) {
+    $sessionId = $app->request->post('sessionId');
     $archive = $app->opentok->startArchive($sessionId, 'Getting Started Sample Archive');
     $app->response->headers->set('Content-Type', 'application/json');
-
-    $responseData = array('archive' => $archive);
-    echo json_encode($responseData);
+    echo json_encode($archive->toJson());
 });
 ```
 
-This causes the recording to begin. The response sent back to the client's request will be the
-JSON-encoded string describing the Archive object.
+You can only create an archive for sessions that have at least one client connected. Otherwise,
+the app will respond with an error.
 
-
-### 3. Stop an Archive
+### Stop an Archive
     
-Next we move on to the handler for stopping an Archive:
+A `POST` request to the `/archive:archiveId/stop` route stops an archive recording.
+The archive ID is returned by call to the `archive/start` endpoint.
 
 ```php
-// Stop Archiving and return the Archive ID
-$app->post('/stop/:archiveId', 'cors', function ($archiveId) use ($app) {
+// Stop Archiving and return the Archive
+$app->post('/archive/:archiveId/stop', 'cors', function ($archiveId) use ($app) {
     $archive = $app->opentok->stopArchive($archiveId);
     $app->response->headers->set('Content-Type', 'application/json');
-
-    $responseData = array('archive' => $archive);
-    echo json_encode($responseData);
+    echo json_encode($archive->toJson());
 });
 ```
 
-This handler is similar to the handler for starting an archive. It takes the ID of the archive that
-needs to be stopped as a URL parameter. Inside the handler, it makes a call to the `stopArchive()`
-method of the opentok instance which takes the archive ID as an argument. 
+### View an Archive
 
-### 4. View an Archive
-
-The code for the handler to view an archive is shown below:
+A `GET` request to `'/archive/:archiveId/view'` redirects the requested clients to
+a URL where the archive gets played.
 
 ```php
 // Download the archive
-$app->get('/view/:archiveId', 'cors', function ($archiveId) use ($app) {
+$app->get('/archive/:archiveId/view', 'cors', function ($archiveId) use ($app) {
     $archive = $app->opentok->getArchive($archiveId);
-
-    if ($archive->status=='available')
+    if ($archive->status=='available') {
         $app->redirect($archive->url);
+    }
     else {
         $app->render('view.php');
     }
 });
 ```
 
-Similar to the other archive handlers, this handler receives the ID of the archive to be downloaded
-(viewed) as a URL parameter. It makes a call to the `getArchive()` method of the opentok instance
-which takes the archive ID as the parameter. 
+### Get Archive information
 
-We then check if the archive is available for viewing. If it is available, the client application is
-redirected to the archive's URL. Note that this is temporary storage and the archive status will
-change to `'expired'` after 72 hours.
+A `GET` request to `/archive/:archiveId` returns a JSON object that contains all archive properties, including `status`, `url`, `duration`, etc. For more information, see [here](https://tokbox.com/developer/sdks/node/reference/Archive.html).
 
-If the archive is not yet available, we load a template file `templates/view.html` to which we pass
-the archive parameters (ID, status, and URL) . This template file checks if the archive is available.
-If not, it again requests the `/view/:archiveId` page.
+```php
+$app->get('/archive/:archiveId', 'cors', function ($archiveId) use ($app) {
+    $archive = $app->opentok->getArchive($archiveId);
+    $app->response->headers->set('Content-Type', 'application/json');
+    echo json_encode($archive->toJson());
+});
+```
 
-## Appendix -- Deploying to Heroku
+### Fetch multiple Archives
 
-Heroku is a PaaS (Platform as a Service) that can be used to deploy simple and small applications
-for free. For that reason, you may choose to experiment with this code and deploy it using Heroku.
+A `GET` request to `/archive` with optional `count` and `offset` params returns a list of JSON archive objects. For more information, please check [here](https://tokbox.com/developer/sdks/node/reference/OpenTok.html#listArchives).
 
-Use the button at the top of the README to deploy to Heroku in one click!
+Examples:
+```php
+GET /archive // fetch up to 1000 archive objects
+GET /archive?count=10  // fetch the first 10 archive objects
+GET /archive?offset=10  // fetch archives but first 10 archive objetcs
+GET /archive?count=10&offset=10 // fetch 10 archive objects starting from 11st
+```
 
-If you'd like to deploy manually, here is some additional information:
+## More information
 
-*  The provided `Procfile` describes a web process which can launch this application.
+This sample app does not provide client-side OpenTok functionality
+(for connecting to OpenTok sessions and for publishing and subscribing to streams).
+It is intended to be used with the OpenTok tutorials for Web, iOS, iOS-Swift, or Android:
 
-*  Use Heroku config to set the following keys:
-
-   -  `OPENTOK_KEY` -- Your OpenTok API Key
-   -  `OPENTOK_SECRET` -- Your OpenTok API Secret
-   -  `SLIM_MODE` -- Set this to `production` when the environment variables should be used to
-      configure the application. The Slim application will only start reading its Heroku config when
-      its mode is set to `'production'`
-
-   You should avoid committing configuration and secrets to your code, and instead use Heroku's
-   config functionality.
+* [Web](https://tokbox.com/developer/tutorials/web/basic-video-chat/)
+* [iOS](https://tokbox.com/developer/tutorials/ios/basic-video-chat/)
+* [iOS-Swift](https://tokbox.com/developer/tutorials/ios/swift/basic-video-chat/)
+* [Android](https://tokbox.com/developer/tutorials/android/basic-video-chat/)

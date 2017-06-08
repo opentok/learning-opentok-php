@@ -105,7 +105,9 @@ $app->get('/room/:name', 'cors', function($name) use ($app) {
  * POST /archive/start
  */
 $app->post('/archive/start', 'cors', function () use ($app) {
-    $sessionId = $app->request->params('sessionId');
+    $json = $app->request->getBody();
+    $data = json_decode($json, true);
+    $sessionId = $data['sessionId'];
     $archive = $app->opentok->startArchive($sessionId, 'Getting Started Sample Archive');
     $app->response->headers->set('Content-Type', 'application/json');
     echo json_encode($archive->toJson());
@@ -166,12 +168,12 @@ function cors() {
 }
 
 // return HTTP 200 for HTTP OPTIONS requests
-$app->map('/:x+', function($x) {
+$app->map('/:routes+', 'cors', function($routes) {
     http_response_code( 200 );
 })->via('OPTIONS');
 
 // TODO: route to clear storage
-$app->post('/session/clear', function() use ($app) {
+$app->post('/session/clear', 'cors', function() use ($app) {
     if ($app->storage instanceof APCStorage) {
         $app->storage->clear();
     }

@@ -168,7 +168,7 @@ function cors() {
 }
 
 // return HTTP 200 for HTTP OPTIONS requests
-$app->map('/:x+', function($x) {
+$app->map('/:x+', 'cors', function($x) {
     http_response_code( 200 );
 })->via('OPTIONS');
 

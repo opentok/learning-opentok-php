@@ -168,12 +168,12 @@ function cors() {
 }
 
 // return HTTP 200 for HTTP OPTIONS requests
-$app->map('/:x+', 'cors', function($x) {
+$app->map('/:routes+', 'cors', function($routes) {
     http_response_code( 200 );
 })->via('OPTIONS');
 
 // TODO: route to clear storage
-$app->post('/session/clear', function() use ($app) {
+$app->post('/session/clear', 'cors', function() use ($app) {
     if ($app->storage instanceof APCStorage) {
         $app->storage->clear();
     }

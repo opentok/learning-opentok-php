@@ -32,13 +32,23 @@ obtain at the [TokBox Dashboard](https://dashboard.tokbox.com/keys).
 		  git clone git@github.com:opentok/learning-opentok-php.git
 
   2. `cd` to the root directory.
-  3. Run `composer install --ignore-platform-reqs` command to fetch and install all dependecies.
+
+  3. Run `composer install --ignore-platform-reqs` command to fetch and install all dependencies.
+
   4. Next, input your own API Key and API Secret into the `run-demo` script file:
 
       ```
       export TOKBOX_API_KEY=0000000
       export TOKBOX_SECRET=abcdef1234567890abcdef01234567890abcdef
       ```
+
+      *Important:* The archiving sample application uses archives that are stored in the OpenTok
+      cloud. In your [OpenTok Account page](https://tokbox.com/account/), ensure that OpenTok
+      project you use (corresponding to the API key and API secret you use here) is *not* set
+      up to use cloud storage on Microsoft Azure or Amazon S3. However, in a production
+      application, you will want to use an OpenTok project that has archive file cloud storage
+      on Microsoft Azure or Amazon S3 enabled, since archives stored on the OpenTok cloud are
+      only available for 72 hours.
 
   5. The run-demo file starts the PHP CLI development server (requires PHP >= 5.4) on port 8080. Start the server using the
 run-demo script:

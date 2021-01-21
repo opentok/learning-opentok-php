@@ -1,8 +1,21 @@
 {
   "require": {
-    "slim/slim": "2.*",
-    "opentok/opentok": "2.2.*",
-    "icanboogie/storage": "~1.0",
-    "php": ">=5.4.0"
+    "slim/slim": "^4.0",
+    "opentok/opentok": "^4.6",
+    "icanboogie/storage": "^4.0",
+    "vlucas/phpdotenv": "^5.3",
+    "laminas/laminas-diactoros": "^2.5",
+    "php-di/slim-bridge": "^3.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "OTHelloWorld\\": "src/"
+    }
+  },
+  "scripts":{
+    "serve": "php -S 0.0.0.0:3000 -t web/"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^0.12.68"
   }
 }

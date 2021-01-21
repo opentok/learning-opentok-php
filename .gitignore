@@ -1,2 +1,5 @@
 vendor/
 storage/
+.env
+.php-version
+.vscode

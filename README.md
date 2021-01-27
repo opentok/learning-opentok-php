@@ -113,7 +113,7 @@ return new RedirectResponse($parser->urlFor('room', ['name' => 'session']));
 ### Start an [Archive](https://tokbox.com/developer/guides/archiving/)
 
 A `POST` request to the `/archive/start` route starts an archive recording of an OpenTok session.
-The session ID OpenTok session is passed in as JSON data in the body of the request
+The session ID OpenTok session is passed as POST variable (or JSON data in the body) of the request:
 
 ```php
 // Start Archiving and return the Archive

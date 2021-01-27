@@ -22,8 +22,13 @@ class StartAction
 
     public function __invoke(ServerRequestInterface $request) : ResponseInterface
     {
-        $data = json_decode($request->getBody()->getContents(), true);
-        $sessionId = $data['sessionId'];
+        if(isset($_POST['sessionId'])) {
+            $sessionId = $_POST['sessionId'];
+        } else {
+            $data = json_decode($request->getBody()->getContents(), true);
+            $sessionId = $data['sessionId'];
+        }
+        
         $archive = $this->opentok->startArchive($sessionId, ['name' => 'Getting Started Sample Archive']);
 
         return new JsonResponse($archive->toJson());

@@ -46,10 +46,10 @@ $app->get('/', IndexAction::class)->setName('index');
 $app->get('/session', SessionAction::class)->setName('session');
 $app->get('/room/{name}', RoomAction::class)->setName('room');
 $app->get('/archive', ListAction::class)->setName('archive.list');
-$app->post('/archive/start', StartAction::class)->setName('archive.start');
-$app->get('/archive/{archiveId}', GetAction::class)->setName('archive.get');
-$app->post('/archive/{archiveId}/stop', StopAction::class)->setName('archive.stop');
-$app->post('/archive/{archiveId}/view', ViewAction::class)->setName('archive.view');
+$app->map(['GET', 'POST'], '/archive/start', StartAction::class)->setName('archive.start');
+$app->map(['GET', 'POST'], '/archive/{archiveId}', GetAction::class)->setName('archive.get');
+$app->map(['GET', 'POST'], '/archive/{archiveId}/stop', StopAction::class)->setName('archive.stop');
+$app->map(['GET', 'POST'], '/archive/{archiveId}/view', ViewAction::class)->setName('archive.view');
 
 // return HTTP 200 for HTTP OPTIONS requests
 $app->options('/:routes+', function(RequestInterface $request, ResponseInterface $response) {

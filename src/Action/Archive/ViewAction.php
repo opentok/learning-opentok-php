@@ -2,6 +2,7 @@
 
 namespace OTHelloWorld\Action\Archive;
 
+use GuzzleHttp\Exception\ClientException;
 use OpenTok\OpenTok;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -32,7 +33,14 @@ class ViewAction
      */
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args) : ResponseInterface
     {
-        $archive = $this->opentok->getArchive($args['archiveId']);
+        try {
+            $archive = $this->opentok->getArchive($args['archiveId']);
+        } catch (ClientException $e) {
+            return new HtmlResponse('<h1>Error</h1>'. $e->getMessage(), $e->getCode());
+        } catch (\Exception $e) {
+            return new HtmlResponse('<h1>Unknown Error</h1>'. $e->getMessage(), 500);
+        }
+
         if ($archive->status=='available') {
             return new RedirectResponse($archive->url);
         }

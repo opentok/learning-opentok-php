@@ -27,6 +27,6 @@ class StopAction
     {
         $archive = $this->opentok->stopArchive($args['archiveId']);
         
-        return new JsonResponse($archive->toJson());
+        return new JsonResponse($archive->toArray());
     }
 }

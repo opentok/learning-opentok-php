@@ -29,7 +29,7 @@ class ListAction
 
         $result = array();
         foreach ($archives as $archive) {
-            $result[] = $archive->toJson();
+            $result[] = $archive->toArray();
         }
 
         return new JsonResponse($result);

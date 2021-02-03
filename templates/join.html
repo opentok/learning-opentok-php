@@ -1,0 +1,60 @@
+<html>
+<head>
+    <title> OpenTok Getting Started </title>
+    <link href="css/app.css" rel="stylesheet" type="text/css">
+    <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
+</head>
+<body>
+
+    <div id="videos">
+        <div id="subscriber"></div>
+        <div id="publisher"></div>
+    </div>
+
+    <script type="text/javascript">
+        const apiKey = "{{ apiKey }}";
+        const sessionId = "{{ sessionId }}";
+        const token = "{{ token }}";
+
+        function handleError(error) {
+            if (error) {
+                alert(error.message);
+            }
+        }
+
+        function initializeSession() {
+            var session = OT.initSession(apiKey, sessionId);
+
+            // Subscribe to a newly created stream
+
+            // Create a publisher
+            var publisher = OT.initPublisher('publisher', {
+                insertMode: 'append',
+                width: '100%',
+                height: '100%'
+            }, handleError);
+
+            // Connect to the session
+            session.connect(token, function(error) {
+                // If the connection is successful, publish to the session
+                if (error) {
+                handleError(error);
+                } else {
+                session.publish(publisher, handleError);
+                }
+            });
+
+            session.on('streamCreated', function(event) {
+                session.subscribe(event.stream, 'subscriber', {
+                    insertMode: 'append',
+                    width: '100%',
+                    height: '100%'
+                }, handleError);
+            });
+        }
+
+        // (optional) add server code here
+        initializeSession();
+    </script>
+</body>
+</html>

@@ -26,6 +26,6 @@ class StartAction
         $sessionId = $data['sessionId'];
         $archive = $this->opentok->startArchive($sessionId, ['name' => 'Getting Started Sample Archive']);
 
-        return new JsonResponse($archive->toJson());
+        return new JsonResponse($archive->toArray());
     }
 }

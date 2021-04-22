@@ -60,7 +60,7 @@ $app->options('/:routes+', function(RequestInterface $request, ResponseInterface
 $app->add(function (RequestInterface $request, $handler) use ($app) {
     $response = $handler->handle($request);
     return $response
-        ->withHeader('Access-Control-Allow-Origin', $app->getBasePath())
+        ->withHeader('Access-Control-Allow-Origin', '*')
         ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
         ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
     ;

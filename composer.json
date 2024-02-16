@@ -1,11 +1,14 @@
 {
   "require": {
+    "php": ">=7.4 || <8.0",
     "slim/slim": "^4.0",
     "opentok/opentok": "^4.6",
-    "icanboogie/storage": "^4.0",
+    "guzzlehttp/guzzle": "^7.0",
+    "icanboogie/storage": "^4.0 || ^6.0@dev",
     "vlucas/phpdotenv": "^5.3",
     "laminas/laminas-diactoros": "^2.5",
-    "php-di/slim-bridge": "^3.1"
+    "php-di/slim-bridge": "^3.1",
+    "monolog/monolog": "^2.2"
   },
   "autoload": {
     "psr-4": {
